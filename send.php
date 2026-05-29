@@ -71,7 +71,7 @@ try {
     $mail->Host       = 'smtp.hostinger.com';
     $mail->SMTPAuth   = true;
     $mail->Username   = 'admin@illusionxstudios.com'; // 👈 your Hostinger email
-    $mail->Password   = 'YOUR_EMAIL_PASSWORD';         // 👈 your Hostinger email password
+    $mail->Password   = 'Xstudios422@';         // 👈 your Hostinger email password
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port       = 587;
     $mail->CharSet    = 'UTF-8';
