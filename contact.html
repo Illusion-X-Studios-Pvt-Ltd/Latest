@@ -44,33 +44,7 @@
     .ct-ff.err input,.ct-ff.err textarea{border-bottom-color:#ff4466}
     .ct-ff .emsg{font-size:11px;color:#ff4466;margin-top:4px;display:none}.ct-ff.err .emsg{display:block}
     .sel-wrap{position:relative}.sel-wrap::after{content:'↓';position:absolute;right:0;top:50%;transform:translateY(-50%);color:rgba(0,212,255,.5);pointer-events:none;font-size:13px}
-    .upload-wrap{margin-top:8px}
-    .upload-label{display:block;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:rgba(0,212,255,.65);margin-bottom:10px;font-family:var(--fh)}
-    .f-opt{color:rgba(255,255,255,.3);letter-spacing:.1em;font-size:8.5px}
-    /* .upload-box{border:1.5px dashed rgba(0,212,255,.25);border-radius:12px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:border-color .25s,background .25s;text-align:center} */
-    .upload-box {
-      border: 1.5px dashed rgba(0,212,255,.25);
-      border-radius: 12px;
-      padding: 22px 18px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      transition: border-color .25s, background .25s;
-      text-align: center;
-
-      width: 500px;      /* NEW: fixed width */
-      max-width: 100%;   /* NEW: responsive fallback */
-    }
-    .upload-box:hover{border-color:rgba(0,212,255,.6);background:rgba(0,212,255,.04)}
-    .upload-box svg{color:rgba(0,212,255,.5)}
-    .upload-hint{font-size:13.5px;color:rgba(255,255,255,.6)}.upload-link{color:var(--cyan);text-decoration:underline;text-underline-offset:3px}
-    .upload-types{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.25)}
-    .upload-chosen{font-size:12px;color:var(--cyan);margin-top:8px;display:flex;align-items:center;gap:6px}
-    .upload-chosen::before{content:'✓';font-size:11px}
-
-    .fr{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
     .ct-btn{width:100%;padding:16px;background:transparent;color:var(--cyan);font-family:var(--fh);font-weight:700;font-size:14px;letter-spacing:.05em;border:1px solid rgba(0,212,255,.5);border-radius:8px;cursor:pointer;transition:background .25s,color .25s,box-shadow .25s;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;position:relative;overflow:hidden}
     .ct-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,212,255,.08),rgba(0,128,255,.08));opacity:0;transition:opacity .3s}
     .ct-btn:hover{border-color:var(--cyan);box-shadow:0 0 24px rgba(0,212,255,.2);color:var(--white)}.ct-btn:hover::before{opacity:1}
@@ -202,18 +176,6 @@
         <div class="ct-ff"><div class="sel-wrap"><select id="cf-budget"><option value="" disabled selected></option><option value="s">Under $5,000</option><option value="m">$5,000 – $20,000</option><option value="l">$20,000 – $50,000</option><option value="xl">$50,000+</option><option value="r">Ongoing Retainer</option></select><label for="cf-budget">Project Budget</label></div></div>
 
         <div class="ct-ff"><textarea id="cf-msg" rows="5" placeholder=" " required></textarea><label for="cf-msg">Project Brief <span class="f-req">*</span></label><p class="emsg">Please tell us about your project.</p></div>
-        <div class="ct-ff upload-wrap">
-          <label class="upload-label" for="cf-file">Project Files <span class="f-opt"></span></label>
-          <div class="upload-box" id="upload-box">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <span class="upload-hint">Drop your file here or <span class="upload-link">browse</span></span>
-            <span class="upload-types">.rar, .zip, .pdf — max 25 MB</span>
-            <input type="file" id="cf-file" accept=".rar,.zip,.pdf" hidden/>
-          </div>
-          <p class="upload-chosen" id="upload-chosen" style="display:none"></p>
-          <p class="emsg" id="upload-err" style="display:none">File too large. Maximum size is 25 MB.</p>
-        </div>
-
         <button type="submit" class="ct-btn"><div class="ct-spin"></div><span>Send Message →</span></button>
         <p class="f-priv">Your information is confidential and will never be shared with third parties.</p>
       </form>
