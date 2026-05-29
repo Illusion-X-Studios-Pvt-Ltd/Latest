@@ -388,25 +388,74 @@ function initIframeFullview(){
 
 /* ── CONTACT FORM ── */
 function initForm(){
-  var form=document.getElementById('contact-form');if(!form)return;
-  form.addEventListener('submit',function(e){e.preventDefault();var valid=true;
-    form.querySelectorAll('[required]').forEach(function(f){
-      var wrap=f.closest('.ff')||f.closest('.ct-ff'),ok=f.value.trim().length>0;
-      if(f.type==='email')ok=ok&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.value);
-      if(wrap)wrap.classList.toggle('err',!ok);if(!ok)valid=false;
+  var form = document.getElementById('contact-form');
+  if(!form) return;
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var valid = true;
+    
+    // Validation
+    form.querySelectorAll('[required]').forEach(function(f) {
+      var wrap = f.closest('.ff') || f.closest('.ct-ff');
+      var ok = f.value.trim().length > 0;
+      if (f.type === 'email') {
+        ok = ok && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.value);
+      }
+      if (wrap) wrap.classList.toggle('err', !ok);
+      if (!ok) valid = false;
     });
-    if(!valid)return;var btn=form.querySelector('.btn-submit')||form.querySelector('.ct-btn');if(btn)btn.classList.add('loading');
 
-    setTimeout(function(){if(btn)btn.classList.remove('loading');form.style.display='none';var suc=document.getElementById('form-success');if(suc)suc.classList.add('show')},1800)});
-    var ub=document.getElementById('upload-box'),fi=document.getElementById('cf-file'),uc=document.getElementById('upload-chosen'),ue=document.getElementById('upload-err');
-    if(ub&&fi){ub.addEventListener('click',function(){fi.click()});fi.addEventListener('change',function(){ue.style.display='none';if(fi.files[0]){if(fi.files[0].size>25*1024*1024){ue.style.display='block';uc.style.display='none';fi.value=''}else{uc.textContent=fi.files[0].name;uc.style.display='flex';ub.style.borderColor='rgba(0,212,255,.6)'}}})}
+    if(!valid) return;
+    
+    var btn = form.querySelector('.btn-submit') || form.querySelector('.ct-btn');
+    if (btn) btn.classList.add('loading');
 
-    form.querySelectorAll('input,textarea').forEach(function(el){el.addEventListener('input',function(){var w=el.closest('.ff')||el.closest('.ct-ff');if(w)w.classList.remove('err')})});
-    form.querySelectorAll('select').forEach(function(sel){sel.addEventListener('change',function(){sel.value?sel.classList.add('has-value'):sel.classList.remove('has-value')})});
+    // 1. Pack up the form data using the exact IDs from your HTML
+    var formData = new FormData();
+    formData.append('name', document.getElementById('cf-name').value);
+    formData.append('email', document.getElementById('cf-email').value);
+    formData.append('company', document.getElementById('cf-company').value);
+    
+    var srv = document.getElementById('cf-service');
+    formData.append('service', srv.options[srv.selectedIndex]?.text || '');
+    
+    var bdg = document.getElementById('cf-budget');
+    formData.append('budget', bdg.options[bdg.selectedIndex]?.text || '');
+    
+    formData.append('message', document.getElementById('cf-msg').value);
 
+    formData.append('access_key', 'f60a742d-fcb8-46e5-9b1d-242d191ad584'); // ← paste your key here
 
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      body: formData
+    })
+    .then(function(response){ return response.json(); })
+    .then(function(data){
+      if (btn) btn.classList.remove('loading');
+      if (data.success) {
+        form.style.display = 'none';
+        var suc = document.getElementById('form-success');
+        if (suc) suc.classList.add('show');
+      } else {
+        alert('Could not send message: ' + (data.message || 'Unknown error'));
+      }
+    })
+    .catch(function(error){
+      if (btn) btn.classList.remove('loading');
+      alert('A network error occurred. Please try again later.');
+      console.error('Form submission error:', error);
+    });
+  });
+
+  form.querySelectorAll('input,textarea').forEach(function(el){
+    el.addEventListener('input',function(){var w=el.closest('.ff')||el.closest('.ct-ff');if(w)w.classList.remove('err')})
+  });
+  form.querySelectorAll('select').forEach(function(sel){
+    sel.addEventListener('change',function(){sel.value?sel.classList.add('has-value'):sel.classList.remove('has-value')})
+  });
 }
-
 /* ── MODAL ── */
 function initModal(){
   var modal=document.getElementById('reel-modal');if(!modal)return;
