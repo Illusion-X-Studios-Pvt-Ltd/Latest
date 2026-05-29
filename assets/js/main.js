@@ -386,120 +386,133 @@ function initIframeFullview(){
   });
 }
 
-/* ── CONTACT FORM ── */
-function initForm(){
-  var form = document.getElementById('contact-form');
-  if(!form) return;
+/* ── CONTACT FORM — FormSubmit Version ──────────────────────────────
+ *
+ *  SETUP (one-time):
+ *  1. Replace YOUR_EMAIL below with your real email address.
+ *  2. On the FIRST form submission, FormSubmit will email you a
+ *     verification link — click it once.
+ *  3. Done. All future submissions land in your inbox for free.
+ *
+ *  No account, no dashboard, no paid tier needed.
+ *  Docs: https://formsubmit.co
+ * ──────────────────────────────────────────────────────────────────── */
 
-  // 1. Dynamic UI Logger (Injected right above the form)
+const FORMSUBMIT_EMAIL = 'admin@illusionxstudios.com'; // 👈 change this
+
+function initForm() {
+  var form = document.getElementById('contact-form');
+  if (!form) return;
+
+  /* ── UI Logger (same as before, keeps your debug panel) ── */
   function uiLog(msg, data) {
     var logger = document.getElementById('ui-logger');
     if (!logger) {
       logger = document.createElement('pre');
       logger.id = 'ui-logger';
-      // Styling it to match your site's dark/cyan aesthetic
-      logger.style.cssText = 'background: rgba(0,0,0,0.6); color: #00D4FF; padding: 16px; font-family: "JetBrains Mono", monospace; font-size: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.3); white-space: pre-wrap; word-break: break-all; max-height: 250px; overflow-y: auto; position: relative; z-index: 10;';
+      logger.style.cssText =
+        'background:rgba(0,0,0,0.6);color:#00D4FF;padding:16px;' +
+        'font-family:"JetBrains Mono",monospace;font-size:12px;' +
+        'margin-bottom:20px;border-radius:8px;border:1px solid rgba(0,212,255,0.3);' +
+        'white-space:pre-wrap;word-break:break-all;max-height:250px;' +
+        'overflow-y:auto;position:relative;z-index:10;';
       form.parentNode.insertBefore(logger, form);
     }
     var timestamp = new Date().toLocaleTimeString();
     var dataStr = data ? '\n' + JSON.stringify(data, null, 2) : '';
-    // Prepend logs so the newest is at the top
-    logger.textContent = '[' + timestamp + '] ' + msg + dataStr + '\n\n' + logger.textContent;
+    logger.textContent =
+      '[' + timestamp + '] ' + msg + dataStr + '\n\n' + logger.textContent;
   }
 
-  form.addEventListener('submit', function(e) {
+  form.addEventListener('submit', function (e) {
     e.preventDefault();
     var valid = true;
-    
-    // Validation
-    form.querySelectorAll('[required]').forEach(function(f) {
+
+    /* Validation (unchanged) */
+    form.querySelectorAll('[required]').forEach(function (f) {
       var wrap = f.closest('.ff') || f.closest('.ct-ff');
       var ok = f.value.trim().length > 0;
-      if (f.type === 'email') {
-        ok = ok && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.value);
-      }
+      if (f.type === 'email') ok = ok && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.value);
       if (wrap) wrap.classList.toggle('err', !ok);
       if (!ok) valid = false;
     });
 
-    if(!valid) {
+    if (!valid) {
       uiLog('⚠️ Validation failed: Please fill all required fields correctly.');
       return;
     }
-    
+
     var btn = form.querySelector('.btn-submit') || form.querySelector('.ct-btn');
     if (btn) btn.classList.add('loading');
 
-    // Pack up the form data
-    var formData = new FormData();
-    formData.append('name', document.getElementById('cf-name').value);
-    formData.append('email', document.getElementById('cf-email').value);
-    formData.append('company', document.getElementById('cf-company').value);
-    
+    /* Build payload for FormSubmit */
     var srv = document.getElementById('cf-service');
-    formData.append('service', srv.options[srv.selectedIndex]?.text || '');
-    
     var bdg = document.getElementById('cf-budget');
-    formData.append('budget', bdg.options[bdg.selectedIndex]?.text || '');
-    
-    formData.append('message', document.getElementById('cf-msg').value);
-    formData.append('access_key', 'f60a742d-fcb8-46e5-9b1d-242d191ad584'); 
 
-    // Convert FormData to a standard Object for reliable JSON submission
-    var object = {};
-    formData.forEach(function(value, key){
-        object[key] = value;
-    });
-    
-    var jsonPayload = JSON.stringify(object);
-    uiLog('🚀 Sending payload to Web3Forms...', object);
+    var payload = {
+      name:    document.getElementById('cf-name').value,
+      email:   document.getElementById('cf-email').value,
+      company: document.getElementById('cf-company').value,
+      service: srv.options[srv.selectedIndex]?.text || '',
+      budget:  bdg.options[bdg.selectedIndex]?.text || '',
+      message: document.getElementById('cf-msg').value,
 
-    fetch('https://api.web3forms.com/submit', {
+      /* FormSubmit control fields */
+      _subject:      'New Project Enquiry — illusionxstudios',
+      _template:     'table',     // clean table-style email
+      _captcha:      'false',     // disable captcha (re-enable if you get spam)
+      _autoresponse: 'Thanks for reaching out! We\'ve received your brief and will reply within 24 hours. — illusionxstudios'
+    };
+
+    uiLog('🚀 Sending payload to FormSubmit...', payload);
+
+    fetch('https://formsubmit.co/ajax/' + FORMSUBMIT_EMAIL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json' // CRITICAL: Forces Web3Forms to return JSON instead of HTML
+        'Accept': 'application/json'
       },
-      body: jsonPayload
+      body: JSON.stringify(payload)
     })
-    .then(async function(response){
-      // Intercept the raw text response for debugging
-      var text = await response.text();
-      uiLog('📥 Received raw response (Status: ' + response.status + ')', text);
-      
-      try {
-          return JSON.parse(text);
-      } catch(err) {
-          throw new Error("Failed to parse JSON. Server returned: " + text.substring(0, 50) + "...");
-      }
-    })
-    .then(function(data){
-      if (btn) btn.classList.remove('loading');
-      uiLog('✅ Submission Successful. UI should now show success message.');
-      
-      if (data.success) {
-        form.style.display = 'none';
-        var suc = document.getElementById('form-success');
-        if (suc) suc.classList.add('show');
-      } else {
-        alert('Could not send message: ' + (data.message || 'Unknown error'));
-      }
-    })
-    .catch(function(error){
-      if (btn) btn.classList.remove('loading');
-      uiLog('❌ Caught Error:', error.message);
-      alert('A network error occurred. Please check the UI log.');
-    });
+      .then(function (response) {
+        return response.json().then(function (data) {
+          return { status: response.status, data: data };
+        });
+      })
+      .then(function (result) {
+        if (btn) btn.classList.remove('loading');
+        uiLog('📥 Response (Status: ' + result.status + ')', result.data);
+
+        if (result.data.success === 'true' || result.data.success === true) {
+          uiLog('✅ Submission successful.');
+          form.style.display = 'none';
+          var suc = document.getElementById('form-success');
+          if (suc) suc.classList.add('show');
+        } else {
+          uiLog('❌ FormSubmit returned failure:', result.data);
+          alert('Could not send message: ' + (result.data.message || 'Unknown error'));
+        }
+      })
+      .catch(function (error) {
+        if (btn) btn.classList.remove('loading');
+        uiLog('❌ Network error:', error.message);
+        alert('A network error occurred. Please check the UI log above.');
+      });
   });
 
-  form.querySelectorAll('input,textarea').forEach(function(el){
-    el.addEventListener('input',function(){var w=el.closest('.ff')||el.closest('.ct-ff');if(w)w.classList.remove('err')})
+  /* Clear error states on input (unchanged) */
+  form.querySelectorAll('input,textarea').forEach(function (el) {
+    el.addEventListener('input', function () {
+      var w = el.closest('.ff') || el.closest('.ct-ff');
+      if (w) w.classList.remove('err');
+    });
   });
-  form.querySelectorAll('select').forEach(function(sel){
-    sel.addEventListener('change',function(){sel.value?sel.classList.add('has-value'):sel.classList.remove('has-value')})
+  form.querySelectorAll('select').forEach(function (sel) {
+    sel.addEventListener('change', function () {
+      sel.value ? sel.classList.add('has-value') : sel.classList.remove('has-value');
+    });
   });
-}
-   
+}   
    /* ── MODAL ── */
 function initModal(){
   var modal=document.getElementById('reel-modal');if(!modal)return;
