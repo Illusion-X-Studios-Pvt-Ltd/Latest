@@ -188,29 +188,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.0.42/dist/lenis.min.js"></script>
 <script src="assets/js/main.js"></script>
+</body>
+</html>
 
-<!-- ═══════════════════════════════════════════════════
-     CONTACT FORM — Formspree (proper CORS, free tier)
-     Setup:
-       1. Sign up at https://formspree.io (free)
-       2. Click "+ New Form", name it anything
-       3. Copy your endpoint — looks like:
-          https://formspree.io/f/xrgjvqkl
-       4. Paste just the ID (e.g. xrgjvqkl) below
-       5. First submit → confirm verification email
-     ═══════════════════════════════════════════════════ -->
+<!-- Contact form — sends to send.php on same server (no CORS) -->
 <script>
 (function () {
-  /* 👇 Paste your Formspree form ID here */
-  var FORMSPREE_ID = 'YOUR_FORM_ID';
-
   var form = document.getElementById('contact-form');
   if (!form) return;
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
 
-    /* — Validate required fields — */
     var valid = true;
     form.querySelectorAll('[required]').forEach(function (f) {
       var wrap = f.closest('.ct-ff');
@@ -221,49 +210,41 @@
     });
     if (!valid) return;
 
-    /* — Loading state — */
     var btn = form.querySelector('.ct-btn');
     if (btn) btn.classList.add('loading');
 
-    /* — Collect values — */
     var srv = document.getElementById('cf-service');
     var bdg = document.getElementById('cf-budget');
 
-    var payload = {
-      name:     document.getElementById('cf-name').value.trim(),
-      email:    document.getElementById('cf-email').value.trim(),
-      company:  document.getElementById('cf-company').value.trim(),
-      service:  srv && srv.selectedIndex > 0 ? srv.options[srv.selectedIndex].text : '—',
-      budget:   bdg && bdg.selectedIndex > 0 ? bdg.options[bdg.selectedIndex].text : '—',
-      message:  document.getElementById('cf-msg').value.trim(),
-      _subject: 'New Project Enquiry — illusionxstudios'
-    };
-
-    fetch('https://formspree.io/f/' + FORMSPREE_ID, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body:    JSON.stringify(payload)
+    fetch('send.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:    document.getElementById('cf-name').value.trim(),
+        email:   document.getElementById('cf-email').value.trim(),
+        company: document.getElementById('cf-company').value.trim(),
+        service: srv && srv.selectedIndex > 0 ? srv.options[srv.selectedIndex].text : '',
+        budget:  bdg && bdg.selectedIndex > 0 ? bdg.options[bdg.selectedIndex].text : '',
+        message: document.getElementById('cf-msg').value.trim()
+      })
     })
     .then(function (res) { return res.json(); })
     .then(function (data) {
       if (btn) btn.classList.remove('loading');
-      if (data.ok) {
+      if (data.success) {
         form.style.display = 'none';
         var suc = document.getElementById('form-success');
         if (suc) suc.classList.add('show');
       } else {
-        /* Formspree returns field-level errors in data.errors */
-        var msg = data.errors ? data.errors.map(function(e){ return e.message; }).join(', ') : 'Please try again.';
-        alert('Submission failed: ' + msg);
+        alert('Error: ' + (data.message || 'Please try again.'));
       }
     })
     .catch(function () {
       if (btn) btn.classList.remove('loading');
-      alert('Network error — please email us directly at admin@illusionxstudios.com');
+      alert('Network error — please email admin@illusionxstudios.com directly.');
     });
   });
 
-  /* — Clear error state on re-type — */
   form.querySelectorAll('input, textarea').forEach(function (el) {
     el.addEventListener('input', function () {
       var w = el.closest('.ct-ff');
@@ -277,6 +258,4 @@
   });
 })();
 </script>
-
-</body>
-</html>
+</body></html>
