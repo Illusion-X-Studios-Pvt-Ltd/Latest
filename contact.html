@@ -94,7 +94,7 @@
     <div class="cl-in">
       <img src="assets/img/logo.png" alt="illusionxstudios" class="cl-logo-img"/>
       <div class="ci-list">
-        <div class="ci"><div class="ci-ico">✉</div><div class="ci-txt"><label>Email</label><a href="mailto:info@illusionxstudios.com">info@illusionxstudios.com</a></div></div>
+        <div class="ci"><div class="ci-ico">✉</div><div class="ci-txt"><label>Email</label><a href="mailto:admin@illusionxstudios.com">admin@illusionxstudios.com</a></div></div>
         <div class="ci"><div class="ci-ico">☎</div><div class="ci-txt"><label>Phone</label><a href="tel:+919940911894">+91 99409 11894</a></div></div>
 
         <div class="ci">
@@ -188,5 +188,94 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.0.42/dist/lenis.min.js"></script>
 <script src="assets/js/main.js"></script>
+
+<!-- ═══════════════════════════════════════════════════
+     CONTACT FORM — Self-contained FormSubmit handler
+     • Works independently of main.js
+     • Free & unlimited: https://formsubmit.co
+     • First submit → verification email → click once → done
+     ═══════════════════════════════════════════════════ -->
+<script>
+(function () {
+  var form = document.getElementById('contact-form');
+  if (!form) return;
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault(); // stop page reload
+
+    /* — Validate required fields — */
+    var valid = true;
+    form.querySelectorAll('[required]').forEach(function (f) {
+      var wrap = f.closest('.ct-ff');
+      var ok = f.value.trim().length > 0;
+      if (f.type === 'email') ok = ok && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.value);
+      if (wrap) wrap.classList.toggle('err', !ok);
+      if (!ok) valid = false;
+    });
+    if (!valid) return;
+
+    /* — Loading state — */
+    var btn = form.querySelector('.ct-btn');
+    if (btn) btn.classList.add('loading');
+
+    /* — Collect values — */
+    var srv = document.getElementById('cf-service');
+    var bdg = document.getElementById('cf-budget');
+
+    var payload = {
+      name:      document.getElementById('cf-name').value.trim(),
+      email:     document.getElementById('cf-email').value.trim(),
+      company:   document.getElementById('cf-company').value.trim(),
+      service:   srv && srv.selectedIndex > 0 ? srv.options[srv.selectedIndex].text : '—',
+      budget:    bdg && bdg.selectedIndex > 0 ? bdg.options[bdg.selectedIndex].text : '—',
+      message:   document.getElementById('cf-msg').value.trim(),
+      /* FormSubmit config fields */
+      _subject:  'New Project Enquiry — illusionxstudios',
+      _template: 'table',
+      _captcha:  'false'
+    };
+
+    /* ─────────────────────────────────────────────────────
+       👇 REPLACE with your actual email address (once only)
+       ───────────────────────────────────────────────────── */
+    var YOUR_EMAIL = 'admin@illusionxstudios.com';
+
+    fetch('https://formsubmit.co/ajax/' + YOUR_EMAIL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body:    JSON.stringify(payload)
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (btn) btn.classList.remove('loading');
+      if (data.success === 'true' || data.success === true) {
+        form.style.display = 'none';
+        var suc = document.getElementById('form-success');
+        if (suc) suc.classList.add('show');
+      } else {
+        alert('Submission failed: ' + (data.message || 'Please try again.'));
+      }
+    })
+    .catch(function () {
+      if (btn) btn.classList.remove('loading');
+      alert('Network error — please email us directly at ' + YOUR_EMAIL);
+    });
+  });
+
+  /* — Clear error highlight on re-type — */
+  form.querySelectorAll('input, textarea').forEach(function (el) {
+    el.addEventListener('input', function () {
+      var w = el.closest('.ct-ff');
+      if (w) w.classList.remove('err');
+    });
+  });
+  form.querySelectorAll('select').forEach(function (sel) {
+    sel.addEventListener('change', function () {
+      sel.value ? sel.classList.add('has-value') : sel.classList.remove('has-value');
+    });
+  });
+})();
+</script>
+
 </body>
 </html>
